@@ -198,6 +198,7 @@ typedef enum acc_device_api
   acc_device_api_cuda,
   acc_device_api_opencl,
   acc_device_api_coi,
+  acc_device_api_hip,
   acc_device_api_other
 } acc_device_api;
 

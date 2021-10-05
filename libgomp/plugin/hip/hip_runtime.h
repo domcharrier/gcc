@@ -40,7 +40,7 @@ typedef int hipDevice_t;
 //#else
 //typedef unsigned hipDeviceptr_t;
 //#endif
-typedef 
+typedef void *hipDeviceptr_t;
 typedef void *hipEvent_t;
 typedef void *hipFunction_t;
 //typedef void *CUlinkState;
@@ -117,11 +117,11 @@ hipError_t hipInit (unsigned);
 hipError_t hipDriverGetVersion (int *);
 hipError_t hipModuleLaunchKernel (hipFunction_t, unsigned, unsigned, unsigned, unsigned,
 			 unsigned, unsigned, unsigned, hipStream_t, void **, void **);
-hipError_t cuLinkAddData (CUlinkState, CUjitInputType, void *, size_t, const char *,
-			unsigned, hipJitOption *, void **);
-hipError_t cuLinkComplete (CUlinkState, void **, size_t *);
-hipError_t cuLinkCreate (unsigned, hipJitOption *, void **, CUlinkState *);
-hipError_t cuLinkDestroy (CUlinkState);
+//hipError_t cuLinkAddData (CUlinkState, CUjitInputType, void *, size_t, const char *,
+//			unsigned, hipJitOption *, void **);
+//hipError_t cuLinkComplete (CUlinkState, void **, size_t *);
+//hipError_t cuLinkCreate (unsigned, hipJitOption *, void **, CUlinkState *);
+//hipError_t cuLinkDestroy (CUlinkState);
 hipError_t hipMemGetInfo (size_t *, size_t *);
 hipError_t hipMalloc (hipDeviceptr_t *, size_t);
 hipError_t hipHostMalloc (void **, size_t);

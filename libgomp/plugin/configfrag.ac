@@ -380,6 +380,13 @@ AC_DEFINE_UNQUOTED([PLUGIN_NVPTX], [$PLUGIN_NVPTX],
   [Define to 1 if the NVIDIA plugin is built, 0 if not.])
 AC_DEFINE_UNQUOTED([PLUGIN_NVPTX_DYNAMIC], [$PLUGIN_NVPTX_DYNAMIC],
   [Define to 1 if the NVIDIA plugin should dlopen libcuda.so.1, 0 if it should be linked against it.])
+
+AM_CONDITIONAL([PLUGIN_HIPAMD], [test $PLUGIN_HIPAMD = 1])
+AC_DEFINE_UNQUOTED([PLUGIN_HIPAMD], [$PLUGIN_HIPAMD],
+  [Define to 1 if the HIP plugin is built, 0 if not.])
+AC_DEFINE_UNQUOTED([PLUGIN_HIPAMD_DYNAMIC], [$PLUGIN_HIPAMD_DYNAMIC],
+  [Define to 1 if the HIP plugin should dlopen libcuda.so.1, 0 if it should be linked against it.])
+
 AM_CONDITIONAL([PLUGIN_GCN], [test $PLUGIN_GCN = 1])
 AC_DEFINE_UNQUOTED([PLUGIN_GCN], [$PLUGIN_GCN],
   [Define to 1 if the GCN plugin is built, 0 if not.])

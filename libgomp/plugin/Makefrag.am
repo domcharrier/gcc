@@ -52,3 +52,16 @@ libgomp_plugin_gcn_la_LDFLAGS += $(PLUGIN_GCN_LDFLAGS)
 libgomp_plugin_gcn_la_LIBADD = libgomp.la $(PLUGIN_GCN_LIBS)
 libgomp_plugin_gcn_la_LIBTOOLFLAGS = --tag=disable-static
 endif
+
+if PLUGIN_HIPAMD
+# HIP OpenACC plugin for AMD devices
+libgomp_plugin_hipamd_version_info = -version-info $(libtool_VERSION)
+toolexeclib_LTLIBRARIES += libgomp-plugin-hipamd.la
+libgomp_plugin_hipamd_la_SOURCES = plugin/plugin-hipamd.c
+libgomp_plugin_hipamd_la_CPPFLAGS = $(AM_CPPFLAGS) $(PLUGIN_HIPAMD_CPPFLAGS)
+libgomp_plugin_hipamd_la_LDFLAGS = $(libgomp_plugin_hipamd_version_info) \
+	$(lt_host_flags)
+libgomp_plugin_hipamd_la_LDFLAGS += $(PLUGIN_HIPAMD_LDFLAGS)
+libgomp_plugin_hipamd_la_LIBADD = libgomp.la $(PLUGIN_HIPAMD_LIBS)
+libgomp_plugin_hipamd_la_LIBTOOLFLAGS = --tag=disable-static
+endif

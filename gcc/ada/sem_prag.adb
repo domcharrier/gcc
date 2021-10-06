@@ -14206,6 +14206,16 @@ package body Sem_Prag is
 
          when Pragma_Compile_Time_Error | Pragma_Compile_Time_Warning =>
             GNAT_Pragma;
+
+            --  These pragmas rely on the context. In adc files they raise
+            --  Constraint_Error. Ban them from use as configuration pragmas
+            --  even in cases where such a use could work.
+
+            if Is_Configuration_Pragma then
+               Error_Pragma
+                  ("pragma% is not allowed as a configuration pragma");
+            end if;
+
             Process_Compile_Time_Warning_Or_Error;
 
          ---------------------------
@@ -14849,9 +14859,9 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
             Check_Arg_Count (1);
-            Arg_Node := Get_Pragma_Arg (Arg1);
+            Check_Arg_Is_Library_Level_Local_Name (Arg1);
 
-            Check_Arg_Is_Library_Level_Local_Name (Arg_Node);
+            Arg_Node := Get_Pragma_Arg (Arg1);
             Device_Entity := Entity (Arg_Node);
 
             if Ekind (Device_Entity) in E_Variable
@@ -14859,8 +14869,9 @@ package body Sem_Prag is
                                       | E_Procedure
                                       | E_Function
             then
-               Add_CUDA_Device_Entity (Scope (Device_Entity), Device_Entity);
-               Error_Msg_N ("??& not implemented yet", N);
+               Add_CUDA_Device_Entity
+                 (Package_Specification_Of_Scope (Scope (Device_Entity)),
+                  Device_Entity);
 
             else
                Error_Msg_NE ("& must be constant, variable or subprogram",

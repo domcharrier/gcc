@@ -1,3 +1,227 @@
+2021-10-05  qing zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/102359
+	* gimplify.c (gimplify_decl_expr): Not add initialization for an
+	auto variable when it has been initialized by frontend.
+
+2021-10-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadupdate.c (jt_path_registry::cancel_invalid_paths):
+	Loosen restrictions
+
+2021-10-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* common/config/avr/avr-common.c (avr_handle_option): Mark
+	argument as ATTRIBUTE_UNUSED.
+
+2021-10-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/lm32/uclinux-elf.h (LINK_GCC_C_SEQUENCE_SPEC):
+	Undefine before redefinition.
+
+2021-10-05  Richard Biener  <rguenther@suse.de>
+
+	* toplev.c (no_backend): Remove global var.
+	(process_options): Pass in no_backend, move post_options
+	langhook call to toplev::main.
+	(do_compile): Pass in no_backend, move process_options call
+	to toplev::main.
+	(toplev::run_self_tests): Check no_backend at the caller.
+	(toplev::main): Call post_options and process_options
+	split out from do_compile, do self-tests only if
+	no_backend is initialized.
+
+2021-10-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (dump_function_to_file): Dump the UID of the
+	function as part of the name when requested.
+	* tree-pretty-print.c (dump_function_name): Dump the UID when
+	requested and the langhook produced the actual name.
+
+2021-10-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102587
+	PR middle-end/102285
+	* internal-fn.c (expand_DEFERRED_INIT): Fall back to
+	zero-initialization as last resort, use the constant
+	size as given by the DEFERRED_INIT argument to build
+	the initializer.
+
+2021-10-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97573
+	* doc/invoke.texi: Document -Warray-compare.
+
+2021-10-04  Richard Biener  <rguenther@suse.de>
+
+	* gimplify.c (is_var_need_auto_init): DECL_HARD_REGISTER
+	variables are not to be initialized.
+
+2021-10-04  Richard Biener  <rguenther@suse.de>
+
+	* expr.h (non_mem_decl_p): Declare.
+	(mem_ref_refers_to_non_mem_p): Likewise.
+	* expr.c (non_mem_decl_p): Export.
+	(mem_ref_refers_to_non_mem_p): Likewise.
+	* internal-fn.c (expand_DEFERRED_INIT): Do not expand the LHS
+	but check the base with mem_ref_refers_to_non_mem_p
+	and non_mem_decl_p.
+
+2021-10-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102570
+	* tree-ssa-sccvn.h (vn_reference_op_struct): Document
+	we are using clique for the internal function code.
+	* tree-ssa-sccvn.c (vn_reference_op_eq): Compare the
+	internal function code.
+	(print_vn_reference_ops): Print the internal function code.
+	(vn_reference_op_compute_hash): Hash it.
+	(copy_reference_ops_from_call): Record it.
+	(visit_stmt): Remove the restriction around internal function
+	calls.
+	(fully_constant_vn_reference_p): Use fold_const_call and handle
+	internal functions.
+	(vn_reference_eq): Compare call return types.
+	* tree-ssa-pre.c (create_expression_by_pieces): Handle
+	generating calls to internal functions.
+	(compute_avail): Remove the restriction around internal function
+	calls.
+
+2021-10-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102560
+	* gimple-ssa-warn-alloca.c (alloca_call_type): Remove static
+	marker for invalid_range.
+
+2021-10-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102587
+	* internal-fn.c (expand_DEFERRED_INIT): Guard register
+	initialization path an avoid initializing VLA registers
+	with it.
+
+2021-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/rs6000/vxworks.h (TARGET_INIT_LIBFUNCS): Delete.
+
+2021-10-03  Martin Liska  <mliska@suse.cz>
+
+	* toplev.c (toplev::main): Check opt_index if it is a part
+	of cl_options.
+
+2021-10-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102563
+	* range-op.cc (operator_lshift::op1_range): Do not clobber
+	range.
+
+2021-10-02  Martin Liska  <mliska@suse.cz>
+
+	* toplev.c (toplev::main): save_decoded_options[0] is program
+	name and so it should be skipped.
+
+2021-10-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102546
+	* range-op.cc (operator_lshift::op1_range): Teach range-ops that
+	X << Y is non-zero implies X is also non-zero.
+
+2021-10-01  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): New
+	Cortex-X2 core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2021-10-01  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): New
+	Cortex-A710 core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2021-10-01  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): New
+	Cortex-A510 core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2021-10-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c/102103
+	* doc/invoke.texi (-Waddress): Update.
+	* gengtype.c (write_types): Avoid -Waddress.
+	* poly-int.h (POLY_SET_COEFF): Avoid using null.
+
+2021-10-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR debug/102373
+	* config/pa/pa.c (pa_option_override): Default to dwarf version 4
+	on hppa64-hpux.
+
+2021-10-01  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64.h (AARCH64_FL_V9): Update value.
+
+2021-10-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::compute_ranges): Use
+	get_path_oracle.
+	* gimple-range-path.h (class path_range_query): Remove shadowed
+	m_oracle field.
+	(path_range_query::get_path_oracle): New.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/102515
+	* doc/invoke.texi (-fsanitize=integer-divide-by-zero): Remove
+	INT_MIN / -1 division detection from here ...
+	(-fsanitize=signed-integer-overflow): ... and add it here.
+
+2021-10-01  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-arches.def (AARCH64_ARCH): Added
+	armv9-a.
+	* config/aarch64/aarch64.h (AARCH64_FL_V9): New.
+	(AARCH64_FL_FOR_ARCH9): New flags for Armv9-A.
+	(AARCH64_ISA_V9): New ISA flag.
+	* doc/invoke.texi: Update docs.
+
+2021-10-01  Martin Liska  <mliska@suse.cz>
+
+	* toplev.c (toplev::main): Save decoded optimization options.
+	* toplev.h (save_opt_decoded_options): New.
+	* doc/extend.texi: Be more clear about optimize and target
+	attributes.
+
+2021-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* explow.c: Include langhooks.h.
+	(set_stack_check_libfunc): Build a proper function type.
+
+2021-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/64697
+	* config/i386/i386.c (legitimate_pic_address_disp_p): For PE-COFF do
+	not return true for external weak function symbols in medium model.
+
+2021-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_ORDER_REPRODUCIBLE): Define.
+	* tree-pretty-print.c (dump_omp_clause) <case OMP_CLAUSE_ORDER>: Print
+	reproducible: for OMP_CLAUSE_ORDER_REPRODUCIBLE.
+	* omp-general.c (omp_extract_for_data): If OMP_CLAUSE_ORDER is seen
+	without OMP_CLAUSE_ORDER_UNCONSTRAINED, overwrite sched_kind to
+	OMP_CLAUSE_SCHEDULE_STATIC.
+
+2021-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102518
+	* tree-inline.c (setup_one_parameter): Avoid substituting
+	an invariant into contexts where a GIMPLE register is not valid.
+
 2021-09-30  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
 
 	* config/arm/arm-cpus.in: Add Cortex-R52+ CPU.

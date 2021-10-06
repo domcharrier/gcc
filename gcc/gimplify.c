@@ -1825,6 +1825,8 @@ static bool
 is_var_need_auto_init (tree decl)
 {
   if (auto_var_p (decl)
+      && (TREE_CODE (decl) != VAR_DECL
+	  || !DECL_HARD_REGISTER (decl))
       && (flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
       && (!lookup_attribute ("uninitialized", DECL_ATTRIBUTES (decl)))
       && !is_empty_type (TREE_TYPE (decl)))
@@ -1870,6 +1872,12 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
     {
       tree init = DECL_INITIAL (decl);
       bool is_vla = false;
+      /* Check whether a decl has FE created VALUE_EXPR here BEFORE
+	 gimplify_vla_decl creates VALUE_EXPR for a vla decl.
+	 If the decl has VALUE_EXPR that was created by FE (usually
+	 C++FE), it's a proxy varaible, and FE already initialized
+	 the VALUE_EXPR of it, we should not initialize it anymore.  */
+      bool decl_had_value_expr_p = DECL_HAS_VALUE_EXPR_P (decl);
 
       poly_uint64 size;
       if (!poly_int_tree_p (DECL_SIZE_UNIT (decl), &size)
@@ -1932,7 +1940,8 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
       /* When there is no explicit initializer, if the user requested,
 	 We should insert an artifical initializer for this automatic
 	 variable.  */
-      else if (is_var_need_auto_init (decl))
+      else if (is_var_need_auto_init (decl)
+	       && !decl_had_value_expr_p)
 	{
 	  gimple_add_init_for_auto_var (decl,
 					flag_auto_var_init,

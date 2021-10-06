@@ -1293,7 +1293,7 @@ package body Exp_Util is
             Adjust_Inherited_Pragma_Sloc (N);
          end if;
 
-         if Nkind (N) = N_Identifier
+         if Nkind (N) in N_Identifier | N_Operator_Symbol
            and then Present (Entity (N))
            and then
              (Is_Formal (Entity (N)) or else Is_Subprogram (Entity (N)))
@@ -6255,6 +6255,32 @@ package body Exp_Util is
 
       raise Program_Error;
    end Find_Protection_Type;
+
+   function Find_Storage_Op
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Entity_Id
+   is
+      use Sem_Util.Storage_Model_Support;
+
+   begin
+      if Has_Storage_Model_Type_Aspect (Typ) then
+         declare
+            SMT_Op : constant Entity_Id :=
+                       Get_Storage_Model_Type_Entity (Typ, Nam);
+         begin
+            if not Present (SMT_Op) then
+               raise Program_Error;
+            else
+               return SMT_Op;
+            end if;
+         end;
+
+      --  Otherwise we assume that Typ is a descendant of Root_Storage_Pool
+
+      else
+         return Find_Prim_Op (Typ, Nam);
+      end if;
+   end Find_Storage_Op;
 
    -----------------------
    -- Find_Hook_Context --
@@ -11737,10 +11763,15 @@ package body Exp_Util is
       --  case and it is better not to make an additional one for the attribute
       --  itself, because the return type of many of them is universal integer,
       --  which is a very large type for a temporary.
+      --  The prefix of an attribute reference Reduce may be syntactically an
+      --  aggregate, but will be expanded into a loop, so no need to remove
+      --  side-effects.
 
       if Nkind (Exp) = N_Attribute_Reference
         and then Side_Effect_Free_Attribute (Attribute_Name (Exp))
         and then Side_Effect_Free (Expressions (Exp), Name_Req, Variable_Ref)
+        and then (Attribute_Name (Exp) /= Name_Reduce
+                   or else Nkind (Prefix (Exp)) /= N_Aggregate)
         and then not Is_Name_Reference (Prefix (Exp))
       then
          Remove_Side_Effects (Prefix (Exp), Name_Req, Variable_Ref);

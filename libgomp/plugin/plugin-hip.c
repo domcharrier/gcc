@@ -57,9 +57,11 @@
    we will free the cached soft-stacks block anyway then retry the
    allocation.  If that fails too, we lose.  */
 
+#define SOFTSTACK_CACHE_LIMIT 134217728
+
 #define DO_PRAGMA(x) _Pragma (#x)
 
-#if PLUGIN_NVPTX_DYNAMIC
+#if PLUGIN_HIP_DYNAMIC
 # include <dlfcn.h>
 
 struct hip_lib_s {
@@ -174,7 +176,7 @@ hip_error (hipError_t r)
 
 /* Version of HIP/ROCm in the same MAJOR.MINOR format that is used by
    AMD. */
-static char rocm_version_s[30];
+static char hip_driver_version_s[30];
 
 static unsigned int instantiated_devices = 0;
 static pthread_mutex_t hip_dev_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -350,11 +352,13 @@ hip_attach_host_thread_to_device (int n)
   hipCtx_t thd_ctx;
 
   r = HIP_CALL_NOCHECK (hipCtxGetDevice, &dev);
-  if (r == HIP_ERROR_NOT_PERMITTED)
-    {
-      /* Assume we're in a HIP callback, just return true.  */
-      return true;
-    }
+
+// note: hipCtxGetDevice does only return hipSuccess / hipErrorInvalidContext
+//  if (r == HIP_ERROR_NOT_PERMITTED)
+//    {
+//      /* Assume we're in a HIP callback, just return true.  */
+//      return true;
+//    }
   if (r != hipSuccess && r != hipErrorInvalidContext)
     {
       GOMP_PLUGIN_error ("hipCtxGetDevice error: %s", hip_error (r));
@@ -394,7 +398,7 @@ hip_open_device (int n)
   hipError_t r;
   int async_engines, pi;
 
-  HIP_CALL_ERET (NULL, hipGetDevice, &dev, n);
+  HIP_CALL_ERET (NULL, hipDeviceGet, &dev, n);
 
   hip_dev = GOMP_PLUGIN_malloc (sizeof (struct hip_device));
 
@@ -424,8 +428,9 @@ hip_open_device (int n)
   else
     hip_dev->ctx_shared = true;
 
-  HIP_CALL_ERET (NULL, hipDeviceGetAttribute,
-		  &pi, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, dev);
+// CU_DEVICE_ATTRIBUTE_GPU_OVERLAP not supported
+//  HIP_CALL_ERET (NULL, hipDeviceGetAttribute,
+//		  &pi, CU_DEVICE_ATTRIBUTE_GPU_OVERLAP, dev);
   hip_dev->overlap = pi;
 
   HIP_CALL_ERET (NULL, hipDeviceGetAttribute,
@@ -458,9 +463,9 @@ hip_open_device (int n)
 
   /* CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR is defined only
      in CUDA 6.0 and newer.  */
-  r = HIP_CALL_NOCHECK (hipDeviceGetAttribute, &pi,
-			 CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR,
-			 dev);
+//  r = HIP_CALL_NOCHECK (hipDeviceGetAttribute, &pi,
+//			 CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR,
+//			 dev);
   /* Fallback: use limit of registers per block, which is usually equal.  */
   if (r == hipErrorInvalidValue)
     pi = hip_dev->regs_per_block;
@@ -488,10 +493,11 @@ hip_open_device (int n)
 		  hipDeviceAttributeMaxThreadsPerMultiProcessor, dev);
   hip_dev->max_threads_per_multiprocessor = pi;
 
-  r = HIP_CALL_NOCHECK (hipDeviceGetAttribute, &async_engines,
-			 hipDeviceAttributeAsyncEngineCount, dev);
-  if (r != hipSuccess)
-    async_engines = 1;
+// hipDeviceAttributeAsyncEngineCount not supported in HIP
+//  r = HIP_CALL_NOCHECK (hipDeviceGetAttribute, &async_engines,
+//			 hipDeviceAttributeAsyncEngineCount, dev);
+//  if (r != hipSuccess)
+    async_engines = 32;
 
   for (int i = 0; i != GOMP_DIM_MAX; i++)
     hip_dev->default_dims[i] = 0;
@@ -1066,22 +1072,24 @@ hip_free (void *p, struct hip_device *hip_dev)
 
   hipError_t r = HIP_CALL_NOCHECK (hipMemGetAddressRange, &pb, &ps,
 				  (hipDeviceptr_t) p);
-  if (r == HIP_ERROR_NOT_PERMITTED)
-    {
-      /* We assume that this error indicates we are in a HIP callback context,
-	 where all CUDA calls are not allowed (see hipStreamAddCallback
-	 documentation for description). Arrange to free this piece of device
-	 memory later.  */
-      struct hip_free_block *n
-	= GOMP_PLUGIN_malloc (sizeof (struct hip_free_block));
-      n->ptr = p;
-      pthread_mutex_lock (&hip_dev->free_blocks_lock);
-      n->next = hip_dev->free_blocks;
-      hip_dev->free_blocks = n;
-      pthread_mutex_unlock (&hip_dev->free_blocks_lock);
-      return true;
-    }
-  else if (r != hipSuccess)
+// HIP_ERROR_NOT_PERMITTED does not exist in HIP
+//  if (r == HIP_ERROR_NOT_PERMITTED)
+//    {
+//      /* We assume that this error indicates we are in a HIP callback context,
+//	 where all HIP calls are not allowed (see hipStreamAddCallback
+//	 documentation for description). Arrange to free this piece of device
+//	 memory later.  */
+//      struct hip_free_block *n
+//	= GOMP_PLUGIN_malloc (sizeof (struct hip_free_block));
+//      n->ptr = p;
+//      pthread_mutex_lock (&hip_dev->free_blocks_lock);
+//      n->next = hip_dev->free_blocks;
+//      hip_dev->free_blocks = n;
+//      pthread_mutex_unlock (&hip_dev->free_blocks_lock);
+//      return true;
+//    }
+//  else if (r != hipSuccess)
+  if (r != hipSuccess)
     {
       GOMP_PLUGIN_error ("hipMemGetAddressRange error: %s", hip_error (r));
       return false;
@@ -1868,7 +1876,7 @@ GOMP_OFFLOAD_openacc_get_property (int n, enum goacc_property prop)
       propval.ptr = "AMD";
       break;
     case GOACC_PROPERTY_DRIVER:
-      propval.ptr = rocm_version_s;
+      propval.ptr = hip_driver_version_s;
       break;
     default:
       break;

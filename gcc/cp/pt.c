@@ -6760,7 +6760,14 @@ has_value_dependent_address (tree op)
   if (DECL_P (op))
     {
       tree ctx = CP_DECL_CONTEXT (op);
+
       if (TYPE_P (ctx) && dependent_type_p (ctx))
+	return true;
+
+      if (VAR_P (op)
+	  && TREE_STATIC (op)
+	  && TREE_CODE (ctx) == FUNCTION_DECL
+	  && type_dependent_expression_p (ctx))
 	return true;
     }
 
@@ -25766,7 +25773,7 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	return true;
 
       ++function_depth;
-      synthesize_method (fn);
+      maybe_synthesize_method (fn);
       --function_depth;
       return !DECL_MAYBE_DELETED (fn);
     }

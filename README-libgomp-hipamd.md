@@ -24,5 +24,5 @@ User: Configure and build libgomp with `hipamd` backend:
 
 ```
 cd libgomp/
-
+./configure 
 ```

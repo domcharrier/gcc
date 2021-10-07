@@ -215,7 +215,7 @@ struct targ_fn_launch
 
 /* Target HIP object information.  */
 
-struct targ_ptx_obj
+struct targ_hip_obj
 {
   const char *code;
   size_t size;
@@ -225,7 +225,7 @@ struct targ_ptx_obj
 
 typedef struct hip_tdata
 {
-  const struct targ_ptx_obj *hip_objs;
+  const struct targ_hip_obj *hip_objs;
   unsigned hip_num;
 
   const char *const *var_names;

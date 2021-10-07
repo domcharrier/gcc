@@ -177,6 +177,10 @@ case "${target}" in
 	#TODO PR101484
 	XCFLAGS="$XCFLAGS -Wno-error=array-bounds"
 	;;
+  
+  hipamd*-*-*)
+	config_path="hipamd accel"
+	;;
 
   *)
 	;;
